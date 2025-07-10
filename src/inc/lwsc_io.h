@@ -3,7 +3,6 @@
 
 #define LWSC_IOBUF_SZ 1024
 
-extern char *lwsc_readin(void);
-extern void lwsc_panic(char msg, char ctx, char *p, short where);
+extern const char *lwsc_readin(void);
 
 #endif
