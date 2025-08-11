@@ -1,32 +1,61 @@
-#include <stdio.h>
-#include <string.h>
-
 #include "inc\lwsc_log.h"
+#include "inc\lwsc_mem.h"
 
-struct LWSCStatus lwsc_status;
-static char *lwsc_log_level[LWSC_LOG_LEVEL_COUNT] = { "log", "warn", "error" };
+typedef enum {
+	LWSC_RENDER_FULL,
+	LWSC_RENDER_NO_CTX,
+	LWSC_RENDER_NO_MOD,
+	LWSC_RENDER_COUNT
+} lwsc_log_render_id;
 
-void lwsc_status_update(char *p, short where, 
-	lwsc_msg_id msg, lwsc_ctx_id ctx) {
-	lwsc_status.p = p;
-	lwsc_status.where = where;
-	lwsc_status.msg = msg;
-	lwsc_status.ctx = ctx;
+static const char *lwsc_log_pattern[LWSC_RENDER_COUNT] = {
+	"lwsc_@$@/@: @;", "lwsc_@$@/@;", "lwsc_@$@;"
+};
+
+static const char *lwsc_log_level[LWSC_LOG_COUNT] = { 
+	"log", "warn", "error" 
+};
+
+static void lwsc_log_render_no_ctx(void) {
+	char *bp, pos; 
+	const char *pp, *sp;
+
+	bp = lwsc_mem;
+	pp = lwsc_log_pattern[LWSC_RENDER_NO_CTX];
+	pos = 0;
+
+	while (*pp)
+		if (*pp == '@') {
+			if (pos == 0)
+				sp = lwsc_log_level[lwsc_status.lvl];
+			else if (pos == 1)
+				sp = lwsc_mod[lwsc_status.mod];
+			else if (pos == 2)
+				sp = lwsc_msg[lwsc_status.msg];
+			else
+				return;
+			while (*sp)
+				*bp++ = *sp++;
+			pos++;
+			pp++;
+		} else
+			*bp++ = *pp++;
+	*bp = '\0';
 }
 
-void lwsc_log(lwsc_log_level lvl) {
-	if (lwsc_status.where < 0 || lwsc_status.where >= LWSC_LOG_BUF_SZ)
-		lwsc_status.where = 0;
-	char buf[lwsc_status.where + 2];
-	
-	memset(buf, ' ', lwsc_status.where);
-	buf[lwsc_status.where] = '^';
-	buf[lwsc_status.where + 1] = '\0';
+lwsc_log_status lwsc_status;
 
-	fprintf(stdout, 
-		"\n$lwsc-%s %s: %s at\n> %s  %s", 
-		lwsc_log_level[lvl], 
-		lwsc_msg[lwsc_status.msg], 
-		lwsc_ctx[lwsc_status.ctx], 
-		lwsc_status.p, buf);
+void lwsc_panic(char mod, char msg) {
+	lwsc_status.lvl = LWSC_WARN;
+	lwsc_status.mod = mod;
+	lwsc_status.msg = msg;
+	lwsc_log_render_no_ctx();
+}
+
+void lwsc_abort(char mod, char msg, char ctx, short where) {
+	return;
+}
+
+const char *lwsc_log_get() {
+	return lwsc_mem;
 }

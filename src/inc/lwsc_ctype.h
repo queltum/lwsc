@@ -1,5 +1,5 @@
-#ifndef LWSC_TYPES_H
-#define LWSC_TYPES_H
+#ifndef LWSC_CTYPE_H
+#define LWSC_CTYPE_H
 
 extern char lwsc_isdigit(char c);
 extern char lwsc_isspace(char c);
