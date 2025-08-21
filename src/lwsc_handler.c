@@ -1,7 +1,6 @@
 #include <string.h>
 
 #include "inc\lwsc_log.h"
-#include "inc\lwsc_types.h"
 #include "inc\lwsc_handler.h"
 
 #define LWSC_HANDLER_BUF_SZ 1024
